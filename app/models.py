@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field, constr
 
@@ -11,6 +12,22 @@ class UrgencyLevel(str, Enum):
     medium = "medium"
     high = "high"
     critical = "critical"
+
+
+class PriorityLevel(str, Enum):
+    p1 = "P1"
+    p2 = "P2"
+    p3 = "P3"
+    p4 = "P4"
+
+
+class EmailCategory(str, Enum):
+    urgent = "URGENT"
+    request = "REQUEST"
+    meeting = "MEETING"
+    report = "REPORT"
+    finance = "FINANCE"
+    general = "GENERAL"
 
 
 # 메일 언어 코드 Enum
@@ -37,14 +54,38 @@ class EmailInput(BaseModel):
     language: Language = Field(default=Language.ko, description="메일 언어")
 
 
+class ActionItem(BaseModel):
+    action_text: str = Field(..., max_length=500, description="액션 내용")
+    action_type: str = Field(default="REVIEW", max_length=50, description="액션 유형")
+    priority_level: PriorityLevel = Field(default=PriorityLevel.p3, description="액션 우선순위")
+    due_at: Optional[datetime] = Field(default=None, description="액션 마감 시각")
+
+
 # 메일 분석 응답(출력) 모델
 # - Python Agent -> Spring Boot 로 반환되는 결과 스키마
 class AnalysisResult(BaseModel):
     email_id: EmailId
     urgency: UrgencyLevel
-    summary: str = Field(..., max_length=300, description="분석 요약(최대 300자)")
+    short_summary: str = Field(..., max_length=1000, description="한 줄 요약")
+    detailed_summary: str = Field(..., description="상세 요약")
+    category: EmailCategory
+    priority_level: PriorityLevel
+    importance_score: float = Field(ge=0.0, le=100.0)
+    urgency_score: float = Field(ge=0.0, le=100.0)
+    confidence_score: float = Field(ge=0.0, le=100.0)
     needs_reply: bool
     has_deadline: bool
-    deadline_at: datetime | None = None
-    action_items: list[str] = Field(default_factory=list)
-    confidence: float = Field(ge=0.0, le=1.0)
+    deadline_at: Optional[datetime] = None
+    suggested_action: str = Field(default="", max_length=255)
+    reasoning: str = Field(default="")
+    action_items: List[ActionItem] = Field(default_factory=list)
+    model_name: str = Field(default="rule-based-agent")
+    prompt_version: str = Field(default="rule-v1")
+
+    @property
+    def summary(self) -> str:
+        return self.short_summary
+
+    @property
+    def confidence(self) -> float:
+        return self.confidence_score / 100.0
