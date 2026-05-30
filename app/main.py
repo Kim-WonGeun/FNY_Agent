@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app.analyzer import analyze_email
-from app.models import EmailInput, Language
+from app.schemas import EmailInput, Language
 
 
 def main() -> None:

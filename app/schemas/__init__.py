@@ -1,21 +1,14 @@
-from app.schemas import (
-    ActionItem,
+from app.schemas.analysis import ActionItem, AnalysisResult, EmailInput
+from app.schemas.common import EmailId, Language, PromptTemplate
+from app.schemas.enums import (
     ActionType,
-    AnalysisResult,
     EmailCategory,
-    EmailId,
-    EmailInput,
-    Language,
     PriorityLevel,
     PriorityReasonCode,
-    PromptTemplate,
     TimeSensitivity,
     UrgencyLevel,
-    WeeklyEmailLine,
-    WeeklyReportInput,
-    WeeklyReportResult,
-    WeeklyThreadSummary,
 )
+from app.schemas.report import WeeklyEmailLine, WeeklyReportInput, WeeklyReportResult, WeeklyThreadSummary
 
 __all__ = [
     "ActionItem",
