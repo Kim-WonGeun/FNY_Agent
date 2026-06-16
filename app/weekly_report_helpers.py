@@ -28,13 +28,9 @@ def extract_weekly_keywords(text: str, limit: int = 12) -> list[str]:
     ]
 
 
-def keyword_group(keywords: list[str], candidates: tuple[str, ...], limit: int = 10) -> list[str]:
-    selected = [keyword for keyword in keywords if keyword in candidates]
-    return selected[:limit]
-
-
-def report_line(prefix: str, keywords: list[str], fallback: str) -> str:
-    selected = keywords[:5]
-    if not selected:
-        return fallback
-    return f"{prefix}: {', '.join(selected)} 관련 내용을 정리했습니다."
+def clean_report_text(text: str, limit: int = 180) -> str:
+    cleaned = re.sub(r"\s+", " ", text or "").strip()
+    cleaned = cleaned.replace("&nbsp;", " ")
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[:limit].rstrip() + "..."

@@ -8,9 +8,10 @@ from unittest.mock import patch
 
 from app.exceptions import LLMConfigurationError, LLMResponseError
 from app.llm_analyzer import LLMEmailAnalyzer, LLMWeeklyReportAnalyzer
-from app.llm_contract import parse_json_model, render_email_analysis_prompt, render_weekly_report_prompt
+from app.llm_contract import parse_json_model
+from app.llm_prompts import render_email_analysis_prompt, render_weekly_report_prompt
 from app.openai_client import OpenAIResponsesClient
-from app.schemas import AnalysisResult, EmailInput, Language, WeeklyReportInput
+from app.schemas import AnalysisResult, EmailInput, Language, PromptTemplate, WeeklyReportInput
 from app.settings import AgentSettings
 from tests.helpers import FakeLLMClient
 
@@ -71,6 +72,7 @@ class LLMAnalyzerContractTest(unittest.TestCase):
             from_email="boss@test.com",
             received_at=datetime(2026, 3, 28, 9, 0, 0),
             language=Language.ko,
+            prompt=PromptTemplate(prompt_code="email-analysis", version=2, model_name="test-model", role="메일 분석가"),
         )
 
         prompt = render_email_analysis_prompt(email, AgentSettings(openai_model="test-model"))
@@ -78,6 +80,8 @@ class LLMAnalyzerContractTest(unittest.TestCase):
         self.assertIn("AnalysisResult", prompt)
         self.assertIn("test-model", prompt)
         self.assertIn("긴급: 오늘 중 회신", prompt)
+        self.assertIn("Prompt code: email-analysis", prompt)
+        self.assertIn("Role:\n메일 분석가", prompt)
         self.assertIn("EML_260328_X9Y8Z7", prompt)
         self.assertIn("AnalysisResult JSON schema", prompt)
         self.assertIn('"priority_level"', prompt)
