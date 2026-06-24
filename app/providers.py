@@ -1,24 +1,13 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Protocol
 
+from app.analyzer_contracts import EmailAnalyzer, WeeklyReportAnalyzer
 from app.email_analyzer import RuleBasedEmailAnalyzer
 from app.llm_analyzer import LLMEmailAnalyzer, LLMWeeklyReportAnalyzer
 from app.openai_client import OpenAIResponsesClient
-from app.schemas import AnalysisResult, EmailInput, WeeklyReportInput, WeeklyReportResult
 from app.settings import AgentSettings, AnalyzerMode, load_settings
 from app.weekly_report import RuleBasedWeeklyReportAnalyzer
-
-
-class EmailAnalyzer(Protocol):
-    def analyze(self, email: EmailInput) -> AnalysisResult:
-        ...
-
-
-class WeeklyReportAnalyzer(Protocol):
-    def analyze(self, payload: WeeklyReportInput) -> WeeklyReportResult:
-        ...
 
 
 def build_email_analyzer(settings: AgentSettings) -> EmailAnalyzer:

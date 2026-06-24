@@ -1,13 +1,9 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from app.analyzer_contracts import EmailAnalyzer, WeeklyReportAnalyzer
 from app.exceptions import LLMError
-from app.providers import (
-    EmailAnalyzer,
-    WeeklyReportAnalyzer,
-    get_email_analyzer,
-    get_weekly_report_analyzer,
-)
+from app.providers import get_email_analyzer, get_weekly_report_analyzer
 from app.schemas import AnalysisResult, EmailInput, WeeklyReportInput, WeeklyReportResult
 
 

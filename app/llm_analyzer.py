@@ -2,15 +2,11 @@ from __future__ import annotations
 
 from typing import Optional
 
-from app.llm_contract import (
-    LLMClient,
-    MissingLLMClient,
-    parse_json_model,
-    render_email_analysis_prompt,
-    render_weekly_report_prompt,
-    with_email_llm_metadata,
-    with_weekly_llm_metadata,
-)
+from app.llm_client import LLMClient, MissingLLMClient
+from app.llm_completion import complete_json_model
+from app.llm_metadata import with_email_llm_metadata, with_weekly_llm_metadata
+from app.llm_prompts import render_email_analysis_prompt, render_weekly_report_prompt
+from app.llm_quality import normalize_email_analysis_result, normalize_weekly_report_result
 from app.schemas import AnalysisResult, EmailInput, WeeklyReportInput, WeeklyReportResult
 from app.settings import AgentSettings
 
@@ -22,9 +18,8 @@ class LLMEmailAnalyzer:
 
     def analyze(self, email: EmailInput) -> AnalysisResult:
         prompt = render_email_analysis_prompt(email, self.settings)
-        raw_result = self.client.complete_json(prompt, self.settings.openai_model)
-        result = parse_json_model(raw_result, AnalysisResult)
-        return with_email_llm_metadata(result, email, self.settings)
+        result = complete_json_model(self.client, self.settings, prompt, AnalysisResult)
+        return with_email_llm_metadata(normalize_email_analysis_result(result, email), email, self.settings)
 
 
 class LLMWeeklyReportAnalyzer:
@@ -34,6 +29,5 @@ class LLMWeeklyReportAnalyzer:
 
     def analyze(self, payload: WeeklyReportInput) -> WeeklyReportResult:
         prompt = render_weekly_report_prompt(payload, self.settings)
-        raw_result = self.client.complete_json(prompt, self.settings.openai_model)
-        result = parse_json_model(raw_result, WeeklyReportResult)
-        return with_weekly_llm_metadata(result, payload, self.settings)
+        result = complete_json_model(self.client, self.settings, prompt, WeeklyReportResult)
+        return with_weekly_llm_metadata(normalize_weekly_report_result(result, payload), payload, self.settings)
